@@ -1,4 +1,5 @@
-from flask import request
+from flask import request, jsonify
+from flask_jwt_extended import create_access_token,jwt_required
 from flask_restx import Resource, fields
 from app import app, api, mongo
 from app.models import User
@@ -56,17 +57,19 @@ class Signin(Resource):
         username = json_data.get('username')
         password = json_data.get('password')
 
-        if not (username and password):
-            return {'error': 'Missing username or password'}, 400
-
+        # Authenticate the user
         user = User.find_by_username(username)
         if user and verify_password(user['password'], password):
-            return {'message': 'Login successful'}, 200
+            # Create JWT token
+            access_token = create_access_token(identity=username)
+            return jsonify(access_token=access_token)
         else:
             return {'error': 'Invalid credentials'}, 401
 
 @api.route('/users')
+
 class UserList(Resource):
+    @jwt_required()
     def get(self):
         """List all users"""
         users = User.find_all(mongo.db)
