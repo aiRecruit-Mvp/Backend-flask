@@ -1,2 +1,4 @@
 /.venv/
 *.pyc
+.idea/Backend-flask.iml
+.idea/misc.xml

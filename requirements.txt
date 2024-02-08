@@ -2,3 +2,5 @@ Flask
 flask_pymongo
 Werkzeug
 flask-restx
+flask-mail
+mail
