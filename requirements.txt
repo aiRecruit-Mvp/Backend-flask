@@ -3,3 +3,5 @@ flask_pymongo
 Werkzeug
 flask-restx
 flask_jwt_extended
+flask-mail
+mail

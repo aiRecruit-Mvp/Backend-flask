@@ -2,7 +2,7 @@ from flask import Flask, jsonify
 from flask_jwt_extended import JWTManager
 from flask_pymongo import PyMongo
 from flask_restx import Api
-
+from flask_mail import Mail
 from config import Config
 
 app = Flask(__name__)
@@ -67,5 +67,6 @@ def revoked_token_callback(jwt_header, jwt_payload):
         "message": "Missing Authorization Header"
     }), 401
 
+mail = Mail(app)
 
 from app import routes
