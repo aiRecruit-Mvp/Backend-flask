@@ -4,3 +4,4 @@
 .DS_Store
 .idea/Backend-flask.iml
 .idea/misc.xml
+app\__pycache__
