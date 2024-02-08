@@ -1,0 +1,155 @@
+{
+	"info": {
+		"_postman_id": "b6c9a33f-2a19-49dc-b892-4e44895043a7",
+		"name": "Backend-AiRecruit",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "30225109"
+	},
+	"item": [
+		{
+			"name": "SignIn",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"username\" :\"Lotfi\",\n\n    \"password\" :\"Lotfi\"\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://127.0.0.1:5000/signin",
+					"protocol": "http",
+					"host": [
+						"127",
+						"0",
+						"0",
+						"1"
+					],
+					"port": "5000",
+					"path": [
+						"signin"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "SignUp",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"username\" :\"Lotfi\",\n    \"email\" : \"Lotfi@gmail.com\",\n    \"password\" :\"Lotfi\",\n    \"name\" : \"Lotfi\",\n    \"last_name\" :\"Lotfi\"\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://127.0.0.1:5000/signup",
+					"protocol": "http",
+					"host": [
+						"127",
+						"0",
+						"0",
+						"1"
+					],
+					"port": "5000",
+					"path": [
+						"signup"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "List Users(JWT) Ok",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://127.0.0.1:5000/users",
+					"protocol": "http",
+					"host": [
+						"127",
+						"0",
+						"0",
+						"1"
+					],
+					"port": "5000",
+					"path": [
+						"users"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "List Users (No JWT) 500",
+			"request": {
+				"auth": {
+					"type": "noauth"
+				},
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://127.0.0.1:5000/users",
+					"protocol": "http",
+					"host": [
+						"127",
+						"0",
+						"0",
+						"1"
+					],
+					"port": "5000",
+					"path": [
+						"users"
+					]
+				}
+			},
+			"response": []
+		}
+	],
+	"auth": {
+		"type": "bearer",
+		"bearer": [
+			{
+				"key": "token",
+				"value": "{{Token}}.eyJmcmVzaCI6ZmFsc2UsImlhdCI6MTcwNzQyMDYwMCwianRpIjoiODdhNGNjOWYtM2FhOS00MTQzLTljYWQtMTY0NjA2MTEyNDhmIiwidHlwZSI6ImFjY2VzcyIsInN1YiI6IkxvdGZpIiwibmJmIjoxNzA3NDIwNjAwLCJjc3JmIjoiYzI1ZWE5ODEtOGFmNy00MTc2LTk5Y2EtYzlhZmIyZGI2YzNlIiwiZXhwIjoxNzA3NDIxNTAwfQ.p_Zb6zVvyuW8DhBcgSCBgnxImI0wbOj6vCT6RXnKXs0",
+				"type": "string"
+			}
+		]
+	},
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		}
+	],
+	"variable": [
+		{
+			"key": "Token",
+			"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9"
+		}
+	]
+}
