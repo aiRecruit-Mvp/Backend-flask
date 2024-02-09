@@ -1,5 +1,5 @@
 from flask import request, jsonify
-from flask_jwt_extended import create_access_token,jwt_required
+from flask_jwt_extended import create_access_token, jwt_required
 from flask_restx import Resource, fields
 from app import app, api, mongo
 from app.models import User
@@ -8,19 +8,20 @@ from app.auth import verify_password, generate_random_code, send_email, hash_pas
 # Define models for request and response payloads
 user_model = api.model('User', {
     'email': fields.String(required=False, description='User email'),
-    'username': fields.String(required=True, description='Username'),
+   # 'username': fields.String(required=True, description='Username'),
     'password': fields.String(required=True, description='Password'),
     'name': fields.String(required=False, description='First name'),
-    'last_name': fields.String(required=False, description='Last name')
+    #'last_name': fields.String(required=False, description='Last name')
 })
 
 signup_response_model = api.model('SignupResponse', {
-    'message': fields.String(description='Message'),
-    'user_id': fields.String(description='User ID')
+    'name': fields.String(required=True, description='name'),
+    'email': fields.String(required=True, description='email'),
+    'password': fields.String(required=True, description='Password')
 })
 # Model specifically for the signin endpoint
 signin_model = api.model('Signin', {
-    'username': fields.String(required=True, description='Username'),
+    'email': fields.String(required=True, description='email'),
     'password': fields.String(required=True, description='Password')
 })
 forgot_password_model = api.model('ForgotPassword', {
@@ -31,51 +32,56 @@ reset_password_model = api.model('ResetPassword', {
     'code': fields.String(required=True, description='Verification code'),
     'new_password': fields.String(required=True, description='New password')
 })
+
+
 # Define API routes using Flask-RESTx
 @api.route('/signup')
 class Signup(Resource):
     @api.expect(user_model, validate=True)
-    @api.marshal_with(signup_response_model, code=201)
     def post(self):
         """Create a new user"""
         json_data = request.json
         email = json_data.get('email')
-        username = json_data.get('username')
         password = json_data.get('password')
         name = json_data.get('name')
-        last_name = json_data.get('last_name')
 
-        if not (email and username and password and name and last_name):
+        if not (email and password and name):
             return {'message': 'Missing information'}, 400
 
         # Check if the email already exists
-        existing_user = User.find_by_email(email)
+        existing_user = mongo.db.users.find_one({'email': email})
         if existing_user:
             return {'message': 'Email already exists'}, 400
 
-        # Create the user
-        user_id = User.create_user(email, username, password, name, last_name)
-        return {'message': 'User created successfully', 'user_id': user_id}, 201
+        # Use the static method to create a user and get the user data including _id
+        user_data = User.create_user(email, password, name)
+
+        return user_data, 201
+
 @api.route('/signin')
 class Signin(Resource):
     @api.expect(signin_model, validate=True)
     def post(self):
         """Sign in user"""
         json_data = request.json
-        username = json_data.get('username')
+        email = json_data.get('email')
         password = json_data.get('password')
 
         # Authenticate the user
-        user = User.find_by_username(username)
+        user = User.find_by_email(email)
         if user and verify_password(user['password'], password):
-            # Create JWT token
-            access_token = create_access_token(identity=username)
-            return jsonify(access_token=access_token)
+            access_token = create_access_token(identity=email)
+            user_data = {
+                "name": user['name'],
+                "email": user['email'],
+                "_id": str(user['_id'])  # Convert ObjectId to string if using MongoDB
+            }
+            return {"token": access_token, "user": user_data}, 200
         else:
             return {'error': 'Invalid credentials'}, 401
 
-@api.route('/users')
 
+@api.route('/users')
 class UserList(Resource):
     @jwt_required()
     def get(self):
