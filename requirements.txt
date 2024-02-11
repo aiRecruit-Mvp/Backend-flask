@@ -5,4 +5,8 @@ flask-restx
 flask_jwt_extended
 flask-mail
 mail
-
+dotenv
+oauthlib
+flask_cors
+google.auth.transport
+google.oauth2

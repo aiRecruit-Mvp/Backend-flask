@@ -1,10 +1,17 @@
+import os
+
 from flask import Flask, jsonify
 from flask_jwt_extended import JWTManager
 from flask_pymongo import PyMongo
 from flask_restx import Api
 from flask_mail import Mail
-from config import Config
+from oauthlib import oauth2
+from dotenv import load_dotenv
+from flask_cors import CORS
 
+
+from config import Config
+load_dotenv()
 app = Flask(__name__)
 app.config.from_object(Config)
 
@@ -66,7 +73,25 @@ def revoked_token_callback(jwt_header, jwt_payload):
         "error": "authorization_required",
         "message": "Missing Authorization Header"
     }), 401
+CLIENT_ID = os.environ['CLIENT_ID']
+CLIENT_SECRET = os.environ['CLIENT_SECRET']
 
+DATA = {
+    'response_type': "code",
+    'redirect_uri': "https://localhost:5000/home",
+    'scope': 'https://www.googleapis.com/auth/userinfo.email',
+    'client_id': CLIENT_ID,
+    'prompt': 'consent'
+}
+
+
+URL_DICT = {
+    'google_oauth': 'https://accounts.google.com/o/oauth2/v2/auth',
+    'token_gen': 'https://oauth2.googleapis.com/token',
+    'get_user_info': 'https://www.googleapis.com/oauth2/v3/userinfo'
+}
+
+CLIENT = oauth2.WebApplicationClient(CLIENT_ID)
 
 
 from user import routes
