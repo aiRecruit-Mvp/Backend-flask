@@ -11,7 +11,7 @@ app.config.from_object(Config)
 mongo = PyMongo(app)
 api = Api(app)
 mail = Mail(app)
-# Initialize the JWTManager with your Flask app
+# Initialize the JWTManager with your Flask user
 jwt = JWTManager(app)
 
 
@@ -69,4 +69,4 @@ def revoked_token_callback(jwt_header, jwt_payload):
 
 
 
-from app import routes
+from user import routes

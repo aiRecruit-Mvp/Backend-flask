@@ -1,5 +1,5 @@
-from app import mongo
-from app.auth import hash_password, verify_password
+from user import mongo
+from user.auth import hash_password, verify_password
 
 class User:
     def __init__(self, email, username, password, name):
