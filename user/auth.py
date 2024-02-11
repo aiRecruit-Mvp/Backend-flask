@@ -1,6 +1,6 @@
 from werkzeug.security import generate_password_hash, check_password_hash
 from flask_mail import Message
-from app import mail
+from user import mail
 import random
 import string
 def hash_password(password):

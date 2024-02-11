@@ -1,9 +1,9 @@
 from flask import request, jsonify
 from flask_jwt_extended import create_access_token, jwt_required
 from flask_restx import Resource, fields
-from app import app, api, mongo
-from app.models import User
-from app.auth import verify_password, generate_random_code, send_email, hash_password
+from user import app, api, mongo
+from user.models import User
+from user.auth import verify_password, generate_random_code, send_email, hash_password
 
 # Define models for request and response payloads
 user_model = api.model('User', {
