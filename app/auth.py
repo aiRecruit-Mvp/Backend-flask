@@ -21,13 +21,9 @@ def send_email(recipient, subject, body):
     msg.body = body
     mail.send(msg)
 # Function to send an email with the verification code
-def send_verification_email(email, verification_code):
-    subject = "Password Reset Verification Code"
-    body = f"Your verification code is: {verification_code}"
-    msg = Message(subject, recipients=[email], body=body)
-    try:
-        mail.send(msg)
-        print("Email sent successfully")
-    except Exception as e:
-        print(f"Error sending email: {e}")
+
+
+
+
+
 
