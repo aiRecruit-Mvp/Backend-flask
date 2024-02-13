@@ -4,6 +4,7 @@ from flask_restx import Resource, fields
 from app import app, api, mongo
 from app.models import User
 from app.auth import verify_password, generate_random_code, send_email, hash_password
+from flask_cors import CORS
 
 # Define models for request and response payloads
 user_model = api.model('User', {
@@ -31,8 +32,11 @@ reset_password_model = api.model('ResetPassword', {
     'code': fields.String(required=True, description='Verification code'),
     'new_password': fields.String(required=True, description='New password')
 })
+
 # Define API routes using Flask-RESTx
-@api.route('/signup')
+CORS(app)  # Autorise toutes les origines
+
+@api.route('/signup' , methods=["POST"])
 class Signup(Resource):
     @api.expect(user_model, validate=True)
     @api.marshal_with(signup_response_model, code=201)
@@ -42,10 +46,8 @@ class Signup(Resource):
         email = json_data.get('email')
         username = json_data.get('username')
         password = json_data.get('password')
-        name = json_data.get('name')
-        last_name = json_data.get('last_name')
 
-        if not (email and username and password and name and last_name):
+        if not (email and username and password ):
             return {'message': 'Missing information'}, 400
 
         # Check if the email already exists
@@ -54,7 +56,7 @@ class Signup(Resource):
             return {'message': 'Email already exists'}, 400
 
         # Create the user
-        user_id = User.create_user(email, username, password, name, last_name)
+        user_id = User.create_user(email, username, password)
         return {'message': 'User created successfully', 'user_id': user_id}, 201
 @api.route('/signin')
 class Signin(Resource):

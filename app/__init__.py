@@ -4,8 +4,10 @@ from flask_pymongo import PyMongo
 from flask_restx import Api
 from flask_mail import Mail
 from config import Config
+from flask_cors import CORS
 
 app = Flask(__name__)
+
 app.config.from_object(Config)
 
 mongo = PyMongo(app)
@@ -68,5 +70,7 @@ def revoked_token_callback(jwt_header, jwt_payload):
     }), 401
 
 mail = Mail(app)
+
+CORS(app)
 
 from app import routes

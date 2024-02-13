@@ -10,7 +10,7 @@ class User:
         self.last_name = last_name
 
     @staticmethod
-    def create_user(email, username, password, name, last_name):
+    def create_user(email, username, password):
         """
         Creates a new user document in the MongoDB database.
         """
@@ -19,8 +19,7 @@ class User:
             'email': email,
             'username': username,
             'password': hashed_password,
-            'name': name,
-            'last_name': last_name
+
         }
         result = mongo.db.users.insert_one(user_data)
         return str(result.inserted_id)
