@@ -3,7 +3,10 @@ from flask_jwt_extended import create_access_token,jwt_required
 from flask_restx import Resource, fields
 from app import app, api, mongo
 from app.models import User
-from app.auth import verify_password, generate_random_code, send_email, hash_password
+from app.auth import verify_password, generate_random_code, send_email, hash_password, send_email1
+from flask import render_template_string
+
+# Define the HTML template for the email body
 
 # Define models for request and response payloads
 user_model = api.model('User', {
@@ -110,8 +113,8 @@ class UserList(Resource):
 
             # Send an email with the new verification code to the user
             subject = "Password Reset Verification Code"
-            body = f"Your verification code is: {new_verification_code}"
-            send_email(email, subject, body)
+            # body = f"Your new verification code is: {new_verification_code}"
+            send_email1(email, subject, new_verification_code,email)
 
             return {'message': 'verification code sent to your email'}, 200
 

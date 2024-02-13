@@ -3,6 +3,8 @@ from flask_mail import Message
 from app import mail
 import random
 import string
+from flask import render_template_string
+
 def hash_password(password):
     return generate_password_hash(password)
 
@@ -15,7 +17,18 @@ def generate_random_code(length=6):
     characters = string.ascii_letters + string.digits
     return ''.join(random.choice(characters) for _ in range(length))
 
+def send_email1(recipient, subject, verification_code,email):
+    # Read the HTML template from the mail.html file
+    with open('app/Mail.html', 'r') as file:
+        html_content = file.read()
 
+    # Render the HTML template with the verification code
+    html_content = render_template_string(html_content, verification_code=verification_code, email=email)
+
+    # Send the email
+    msg = Message(subject, recipients=[recipient])
+    msg.html = html_content
+    mail.send(msg)
 def send_email(recipient, subject, body):
     msg = Message(subject, recipients=[recipient])
     msg.body = body
