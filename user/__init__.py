@@ -1,8 +1,12 @@
+import os
+
 from flask import Flask, jsonify
 from flask_jwt_extended import JWTManager
 from flask_pymongo import PyMongo
 from flask_restx import Api
 from flask_mail import Mail
+from oauthlib import oauth2
+
 from config import Config
 
 app = Flask(__name__)
@@ -22,7 +26,6 @@ def missing_token_callback(error):
         'error': 'authorization_required',
         'message': 'Authorization token is missing'
     }), 401
-
 
 # Callback function to handle expired tokens
 @jwt.expired_token_loader
@@ -68,5 +71,23 @@ def revoked_token_callback(jwt_header, jwt_payload):
     }), 401
 
 
+CLIENT_ID = app.config['CLIENT_ID']
+CLIENT_SECRET = app.config['CLIENT_SECRET']
+
+DATA = {
+    'response_type': "code",
+    'redirect_uri': "https://localhost:5000/home",
+    'scope': 'https://www.googleapis.com/auth/userinfo.email',
+    'client_id': CLIENT_ID,
+    'prompt': 'consent'
+}
+
+URL_DICT = {
+    'google_oauth': 'https://accounts.google.com/o/oauth2/v2/auth',
+    'token_gen': 'https://oauth2.googleapis.com/token',
+    'get_user_info': 'https://www.googleapis.com/oauth2/v3/userinfo'
+}
+
+CLIENT = oauth2.WebApplicationClient(CLIENT_ID)
 
 from user import routes

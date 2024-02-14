@@ -27,8 +27,21 @@ class User:
         user_data['_id'] = str(result.inserted_id)  # Convert ObjectId to string
         return user_data
 
-    # Other methods remain unchanged...
 
+    def update_user_password(user_id, hashed_password):
+        """
+        Met à jour le mot de passe de l'utilisateur dans la base de données.
+
+        :param user_id: L'identifiant unique de l'utilisateur.
+        :param hashed_password: Le nouveau mot de passe hashé.
+        """
+        try:
+            # Mise à jour du document utilisateur avec le nouveau mot de passe
+            result = mongo.db.users.update_one({'_id': user_id}, {'$set': {'password': hashed_password}})
+            return result.modified_count > 0  # Retourne True si la mise à jour a réussi
+        except Exception as e:
+            print(f"Erreur lors de la mise à jour du mot de passe: {e}")
+            return False
 
     @staticmethod
     def find_all(db):

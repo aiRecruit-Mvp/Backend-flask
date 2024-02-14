@@ -13,3 +13,7 @@ class Config:
     MAIL_USERNAME = 'chaabaniachref212@gmail.com'  # Your Gmail email address
     MAIL_PASSWORD = 'egfw khqv ufbd pyek'  # Your Gmail password
     MAIL_DEFAULT_SENDER = 'chaabaniachref212@gmail.com'  # Default sender
+
+    CLIENT_ID = '104792978938-8osg03385fiif0h9n084j2raadlacgsv.apps.googleusercontent.com'
+    CLIENT_SECRET = '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'
+    REDIRECT_URI = 'https://localhost:5000/home'
