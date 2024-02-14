@@ -3,15 +3,30 @@ from flask_jwt_extended import create_access_token, jwt_required
 from flask_restx import Resource, fields
 from user import app, api, mongo
 from user.models import User
-from user.auth import verify_password, generate_random_code, send_email, hash_password
+from user.auth import verify_password, generate_random_code, send_email, hash_password, send_email1
+from flask import request, jsonify, current_app
+from werkzeug.utils import secure_filename
+import os
+
+ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif'}
+
+
+def allowed_file(filename):
+    return '.' in filename and \
+        filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
+
 
 # Define models for request and response payloads
 user_model = api.model('User', {
     'email': fields.String(required=False, description='User email'),
-   # 'username': fields.String(required=True, description='Username'),
+    # 'username': fields.String(required=True, description='Username'),
     'password': fields.String(required=True, description='Password'),
     'name': fields.String(required=False, description='First name'),
-    #'last_name': fields.String(required=False, description='Last name')
+    # 'last_name': fields.String(required=False, description='Last name')
+})
+verify_code_model = api.model('VerifyCode', {
+    'email': fields.String(required=True, description='User email'),
+    'code': fields.String(required=True, description='Verification code')
 })
 
 signup_response_model = api.model('SignupResponse', {
@@ -29,7 +44,6 @@ forgot_password_model = api.model('ForgotPassword', {
 })
 reset_password_model = api.model('ResetPassword', {
     'email': fields.String(required=True, description='User email'),
-    'code': fields.String(required=True, description='Verification code'),
     'new_password': fields.String(required=True, description='New password')
 })
 
@@ -37,26 +51,41 @@ reset_password_model = api.model('ResetPassword', {
 # Define API routes using Flask-RESTx
 @api.route('/signup')
 class Signup(Resource):
-    @api.expect(user_model, validate=True)
     def post(self):
-        """Create a new user"""
-        json_data = request.json
-        email = json_data.get('email')
-        password = json_data.get('password')
-        name = json_data.get('name')
+        """Create a new user with profile picture"""
+        # Check for file part in the request
+        if 'file' not in request.files:
+            return {'message': 'No file part'}, 401
 
-        if not (email and password and name):
-            return {'message': 'Missing information'}, 400
+        file = request.files['file']
 
-        # Check if the email already exists
-        existing_user = mongo.db.users.find_one({'email': email})
-        if existing_user:
-            return {'message': 'Email already exists'}, 400
+        # No file selected for upload
+        if file.filename == '':
+            return {'message': 'No selected file'}, 402
 
-        # Use the static method to create a user and get the user data including _id
-        user_data = User.create_user(email, password, name)
+        # Check if the file is allowed
+        if file and allowed_file(file.filename):
+            filename = secure_filename(file.filename)
+            file_path = os.path.join(current_app.config['UPLOAD_FOLDER'], filename)
+            file.save(file_path)
 
-        return user_data, 201
+            # Retrieve other form data
+            email = request.form.get('email')
+            name = request.form.get('name')
+            password = request.form.get('password')
+
+            if not (email and name and password and file):
+                return {'message': 'Missing information'}, 420
+
+                # Check if the email already exists
+            existing_user = User.find_by_email(email)
+            if existing_user:
+                return {'message': 'Email already exists'}, 4017
+
+            # Create the user
+            user_id = User.create_user(email, password, name, file_path)
+            return {'message': 'User created successfully', 'user_id': user_id}, 201
+
 
 @api.route('/signin')
 class Signin(Resource):
@@ -69,6 +98,7 @@ class Signin(Resource):
 
         # Authenticate the user
         user = User.find_by_email(email)
+
         if user and verify_password(user['password'], password):
             access_token = create_access_token(identity=email)
             user_data = {
@@ -113,30 +143,41 @@ class UserList(Resource):
 
             # Send an email with the new verification code to the user
             subject = "Password Reset Verification Code"
-            body = f"Your new verification code is: {new_verification_code}"
-            send_email(email, subject, body)
+            # body = f"Your new verification code is: {new_verification_code}"
+            send_email1(email, subject, new_verification_code, email)
 
-            return {'message': 'New verification code sent to your email'}, 200
-
+            return {'message': 'verification code sent to your email'}, 200
     @api.route('/reset_password')
     class ResetPassword(Resource):
         @api.expect(reset_password_model, validate=True)
         def post(self):
             """Reset password"""
-            email = request.json.get('email')
-            code = request.json.get('code')
-            new_password = request.json.get('new_password')
+            json_data = request.json
+            email = json_data.get('email')
+            new_password = json_data.get('new_password')
 
-            # Check if the code matches the one stored in the database
-            stored_code = mongo.db.password_reset_codes.find_one({'email': email, 'code': code})
-            if not stored_code:
-                return {'error': 'Invalid verification code'}, 400
+            # Check if the email exists
+            user = User.find_by_email(email)
+            if not user:
+                return {'error': 'Email not found'}, 404
 
             # Update the user's password
             hashed_password = hash_password(new_password)
             mongo.db.users.update_one({'email': email}, {'$set': {'password': hashed_password}})
 
-            # Delete the verification code from the database
-            mongo.db.password_reset_codes.delete_one({'email': email, 'code': code})
-
             return {'message': 'Password reset successful'}, 200
+
+        @api.route('/verify_code')
+        class VerifyCode(Resource):
+            @api.expect(verify_code_model, validate=True)
+            def post(self):
+                """Verify verification code"""
+                email = request.json.get('email')
+                code = request.json.get('code')
+
+                # Check if the code matches the one stored in the database
+                stored_code = mongo.db.password_reset_codes.find_one({'email': email, 'code': code})
+                if not stored_code:
+                    return {'error': 'Invalid verification code'}, 400
+
+                return {'message': 'Verification code is valid'}, 200
